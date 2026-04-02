@@ -1,4 +1,4 @@
-# 🚀 GitHub Deployment Guide — Stock-PCMP
+https://github.com/YOUR_USERNAME/pcmp_stockhttps://github.com/YOUR_USERNAME/pcmp_stockgit clone https://github.com/YOUR_USERNAME/pcmp_stock.gitgit clone https://github.com/YOUR_USERNAME/pcmp_stock.git# 🚀 GitHub Deployment Guide — Stock-PCMP
 
 ## ✅ Local Repository Created!
 
