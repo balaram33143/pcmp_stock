@@ -1203,13 +1203,24 @@ async function runForecast() {
     };
     const apiTicker = tickerMap[currentTicker] || currentTicker;
     
+    // Check backend health first
+    try {
+      const healthCheck = await fetch(`${API_URL}/health`, { method: 'GET' });
+      if (!healthCheck.ok) throw new Error('Backend health check failed');
+    } catch(e) {
+      throw new Error('Backend not responding - ensure it is running on port 5000');
+    }
+    
     // Call backend API
     const response = await fetch(`${API_URL}/forecast/${apiTicker}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
     
-    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({error: 'Unknown error'}));
+      throw new Error(`API Error ${response.status}: ${errBody.error || 'Unknown'}`);
+    }
     
     currentForecastData = await response.json();
     showLoading(['ld-price'],false);
@@ -1227,7 +1238,15 @@ async function runForecast() {
     showToast('✓ Forecast loaded — ' + apiTicker);
   } catch(e) {
     console.error('Forecast error:', e);
-    showToast('⚠ Error: ' + e.message + ' (Backend running on :5000?)');
+    let errMsg = e.message;
+    if (e.message.includes('Backend not responding')) {
+      errMsg = '❌ Backend offline - Start with: python backend.py';
+    } else if (e.message.includes('API Error')) {
+      errMsg = '❌ ' + e.message;
+    } else if (e.message.includes('Failed to fetch')) {
+      errMsg = '❌ Cannot reach backend on :5000 - Is it running?';
+    }
+    showToast('⚠ ' + errMsg);
     // Fallback: use synthetic data
     currentForecastData = null;
     updateMetrics();
